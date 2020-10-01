@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import config from './config';
+import { googleApisConfig as config } from './config';
 import Button from '@material-ui/core/Button';
 import { TextField, Paper, Tabs, Tab, Typography, makeStyles } from '@material-ui/core';
 // import { gapi } from 'gapi';
@@ -11,9 +11,11 @@ const useStyles = makeStyles({
     margin: 'auto',
     maxWidth: '650px'
   },
+  header: {
+    display: 'flex',
+  },
   h1: {
-    marginTop: '30px',
-    marginBottom: '50px',
+    flexGrow: 1,
   },
   buttonContainer: {
     display: 'flex',
@@ -27,17 +29,20 @@ const useStyles = makeStyles({
     flexGrow: 1
   },
   textField: {
-    margin: '20px 0'
+    marginBottom: '50px',
   },
   getButton: {
     marginRight: '20px'
+  },
+  outputContainer: {
+    minHeight: '500px',
   }
 })
 
 function App() {
   const [json, setJson] = useState('')
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const [docId,setDocId] = useState('');
+  const [isSignedIn, setIsSignedIn] = useState(undefined);
+  const [docId,setDocId] = useState(' ');
   const gapi = window.gapi;
   const [tab,setTab] = useState(0);
   const classes = useStyles();
@@ -92,15 +97,23 @@ function App() {
   
   return (
     <div className={classes.root}>
-      <h1 className={classes.h1}>Google Docs Integration</h1>
-      <div className={classes.buttonContainer}>
-        {isSignedIn
-          ? <Button onClick={handleSignoutClick} variant='outlined' color='primary'>Sign out</Button>
-          : <Button onClick={handleAuthClick} variant='outlined' color='primary'>Authorize</Button>
-        }
+      <div className={classes.header}>
+        <h1 className={classes.h1}>Google Docs Integration</h1>
+        <div className={classes.buttonContainer}>
+          {isSignedIn
+              ? <Button onClick={handleSignoutClick} variant='outlined' color='primary'>Sign out</Button>
+              : (isSignedIn !== undefined) ? <Button onClick={handleAuthClick} variant='outlined' color='primary'>Authorize</Button> : null
+          }
+        </div>
       </div>
-      <TextField className={classes.textField} variant='standard' placeholder='Document ID' onChange={(event) => parseDocumentUrl(event.target.value)} />
-      <Typography variant='body2' color='textSecondary'>{docId}</Typography>
+      
+      <TextField
+        className={classes.textField}
+        variant='standard'
+        placeholder='Document URL'
+        onChange={(event) => parseDocumentUrl(event.target.value)}
+        helperText={docId}
+      />
       <Paper square className={classes.outputHeader}>
         <Tabs
           value={tab}
@@ -115,7 +128,7 @@ function App() {
         </Tabs>
         <Button onClick={handleGetJson} variant='contained' size='small' color='primary' className={classes.getButton} disabled={!isSignedIn}>Get</Button>
       </Paper>
-      <Paper> 
+      <Paper square className={classes.outputContainer}> 
         <pre>
           {(json && tab === 0) ? JSON.stringify(json, null, 4) : null}
         </pre>
